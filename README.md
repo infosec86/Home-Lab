@@ -19,3 +19,8 @@ Debian 13 Server
 ## My Goals
 
 The purpose of this lab is to build practical IT and cybersecurity skills, document real troubleshooting experience, and create projects that demonstrate hands on technical ability. 
+
+## Documentation
+
+[Safehouse Overview](documentation/safehouse-overview.md)
+[SSH Hardening](documentation/ssh-hardening.md)
