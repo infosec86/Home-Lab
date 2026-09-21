@@ -9,8 +9,8 @@ Debian 13 Server
 •Tailscale private networking
 •UFW firewall
 •Nginx web server
-•Docker & Docker Compose
-•Glances system monitoring 
+•Docker \& Docker Compose
+•Glances system monitoring
 •Rsync backup practice
 •Linux permissions and user management
 •LXC container experiments
@@ -18,9 +18,18 @@ Debian 13 Server
 
 ## My Goals
 
-The purpose of this lab is to build practical IT and cybersecurity skills, document real troubleshooting experience, and create projects that demonstrate hands on technical ability. 
+The purpose of this lab is to build practical IT and cybersecurity skills, document real troubleshooting experience, and create projects that demonstrate hands on technical ability.
 
 ## Documentation
 
 [Safehouse Overview](documentation/safehouse-overview.md)
 [SSH Hardening](documentation/ssh-hardening.md)
+
+
+
+\## Future Lab Work
+
+
+
+Additional projects and security experiments will be documented as the lab develops.
+
