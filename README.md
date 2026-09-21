@@ -4,17 +4,17 @@ This repository documents my personal home lab used to build hands-on experience
 
 ## Current Lab
 
--Debian 13 Server
--SSH key-based remote access
--Tailscale private networking
--UFW firewall
--Nginx web server
--Docker & Docker Compose
--Glances system monitoring 
--Rsync backup practice
--Linux permissions and user management
--LXC container experiments
--SELinux experiments
+Debian 13 Server
+•SSH key-based remote access
+•Tailscale private networking
+•UFW firewall
+•Nginx web server
+•Docker & Docker Compose
+•Glances system monitoring 
+•Rsync backup practice
+•Linux permissions and user management
+•LXC container experiments
+•SELinux experiments
 
 ## My Goals
 
