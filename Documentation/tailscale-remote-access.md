@@ -1,64 +1,67 @@
-\# Tailscale Remote Access
+# Tailscale Remote Access and Exit Node
 
+## Objective
 
+Tailscale is used to provide secure remote access to the home lab without forwarding administrative ports through the home router.
 
-\## Objective
+## Remote Access
 
+Safehouse and authorized client systems are members of the same private Tailscale network.
 
+SSH runs over that private connection:
 
-I wanted secure remote access to my Safehouse home lab without exposing administrative services directly to the open Internet.
+```text
+Remote client
+     |
+     | encrypted Tailscale connection
+     v
+Safehouse
+     |
+     +-- SSH
+     +-- private services
+```
 
+## Exit Node
 
+Safehouse is also configured as a Tailscale exit node for testing trusted remote browsing from networks such as hotels or public Wi-Fi.
 
-\## Configuration
+When enabled on a client:
 
+```text
+Remote client
+     |
+     | Tailscale
+     v
+Safehouse
+     |
+     v
+Internet
+```
 
+This is a networking and secure-remote-access exercise. It does not make the client anonymous; internet traffic still exits through the home internet connection unless another upstream VPN is deliberately configured.
 
-Tailscale was installed on the Safehouse server and my client computer.
+## Linux Client Shortcuts
 
+The Omarchy client uses Bash aliases so the exit node can be enabled and disabled without remembering the full command:
 
+```bash
+alias safehouse-on='sudo tailscale set --exit-node=<SAFEHOUSE_TAILSCALE_IP>'
+alias safehouse-off='sudo tailscale set --exit-node='
+```
 
-The server is accessed over the private Tailscale network rather than through port forwarding on my home router.
+The live Tailscale address is intentionally not stored in this repository.
 
+## Testing
 
+The configuration has been tested by:
 
-SSH is used over the Tailscale connection for remote administration.
+- Reaching Safehouse over Tailscale
+- Using SSH through the tailnet
+- Confirming connectivity after reboot
+- Accessing the server while its laptop lid is closed
+- Selecting Safehouse as an exit node
+- Confirming the client route changes when the exit node is enabled and disabled
 
+## What I Learned
 
-
-\## Security Approach
-
-
-
-Using Tailscale allows me to avoid directly exposing SSH to the open Internet.
-
-
-
-Access is limited to authenticated devices that are members of my private tailnet.
-
-
-
-\## Testing
-
-
-
-I have verified that:
-
-
-
-&#x20;Safehouse could be reached remotely over Tailscale
-
-&#x20;SSH connections worked after reboot
-
-&#x20;The server remained accessible with the laptop lid closed
-
-&#x20;Internal services could be accessed without public port forwarding
-
-
-
-\## What I Learned So Far
-
-
-
-This project helped me understand private overlay networks, secure remote administration, encrypted connectivity, and reducing unnecessary Internet exposure.
-
+This project has provided hands-on practice with overlay networking, encrypted remote access, exit-node routing, client/server roles, and troubleshooting the difference between connectivity problems and authentication problems.
