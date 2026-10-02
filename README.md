@@ -64,6 +64,19 @@ The purpose of this lab is to:
 - Document real troubleshooting and configuration work
 - Build a portfolio of hands-on projects that demonstrates technical ability
 
-## Future Lab Work
+## Next Steps
 
-Planned additions include Kali Linux, intentionally vulnerable training targets, additional network segmentation, firewall/router labs, VPN routing experiments, and eventually more capable dedicated lab hardware.
+Planned additions include Kali Linux, intentionally vulnerable training targets, additional network segmentation, firewall/router labs, VPN routing experiments, and a gradual expansion of the physical lab.
+
+The next hardware phase will focus on adding inexpensive, upgradeable equipment rather than replacing the lab with a single high-cost system. A used ThinkPad may serve as the next step because it can provide more RAM, storage, and virtualization capacity while remaining easy to upgrade.
+
+Longer term, the lab will move toward a compact desktop server-rack style setup. Planned hardware additions include:
+
+- Managed or lab-focused network switches
+- Additional SSD storage and removable media
+- RAM upgrades
+- Small form factor or mini-PC/server hardware
+- Dedicated storage or virtualization nodes
+- Rack or shelf organization for networking, storage, and compute equipment
+
+The goal is to build the environment incrementally so each hardware addition becomes another opportunity to practice installation, storage management, networking, virtualization, monitoring, and secure system administration.
