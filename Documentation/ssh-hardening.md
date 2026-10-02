@@ -2,50 +2,51 @@
 
 ## Objective
 
-The purpose of this configuration was to securely administer the Safehouse server remotely while reducing the risk associated with password based SSH authentication.
+The goal of this configuration is to administer Safehouse remotely while reducing unnecessary SSH exposure and avoiding password-based remote authentication.
 
-## Initial Configuration
+## Authentication
 
-Safehouse uses OpenSSH for remote administration.
+Safehouse uses OpenSSH with Ed25519 public-key authentication.
 
-The server is accessed remotely using my primary Linux account, not the root account.
+The private key remains on the client device and is protected with a passphrase. The corresponding public key is stored in the server user's `authorized_keys` file.
 
-## SSH Key Authentication
+Password-based SSH authentication is disabled, and direct root SSH login is disabled. Administrative tasks are performed from a normal user account with `sudo` only when elevated privileges are required.
 
-I configured Ed25519 public-key authentication for remote access.
+## Network Access
 
-Ed25519 was selected because it provides modern cryptographic security while using relatively small keys.
+SSH is primarily reached through Tailscale instead of exposing port 22 directly to the public internet.
 
-The private SSH key remains on the client device and is protected with a passphrase.
+## Troubleshooting
 
-The corresponding public key is installed on the Safehouse server.
+A useful troubleshooting sequence is:
 
-## Password Authentication
+```bash
+tailscale status
+tailscale ping <SERVER_NAME>
+ssh -vvv <USER>@<SERVER_TAILSCALE_IP>
+```
 
-After confirming that SSH key authentication was working correctly, password-based SSH authentication was disabled.
+The verbose SSH output helped distinguish between:
 
-This reduces the server's exposure to password guessing and brute-force authentication attacks.
+- Network timeouts
+- Hostname-resolution problems
+- Missing client identities
+- Rejected public keys
+- Successful network connectivity with failed authentication
 
-## Root SSH Access
-
-Direct SSH access to the root account was disabled.
-
-Administrative tasks are instead performed through my normal user account using `sudo` when elevated privileges are required.
-
-## Remote Access
-
-SSH access is primarily performed over tailscale rather than exposing the SSH service directly to the public Internet.
+One important lesson was to always verify which machine a command is running on before changing server or client configuration.
 
 ## Verification
 
-The configuration was tested by:
+The setup has been tested by:
 
-• Connecting to Safehouse using an SSH key
-• Confirming password-based SSH authentication was disabled
-• Confirming root SSH login was disabled
-• Rebooting the server
-• Verifying SSH connectivity after reboot
+- Connecting with an SSH key
+- Confirming password authentication is disabled
+- Confirming root SSH login is disabled
+- Rebooting the server
+- Verifying SSH connectivity after reboot
+- Adding a second authorized client key and testing it successfully
 
-## What I Learned so far
+## What I Learned
 
-This project has helped me understand the relationship between SSH authentication, Linux user permissions, public/private key pairs, remote administration, and reducing unnecessary network exposure.
+This work reinforced the relationship between SSH authentication, Linux permissions, public/private key pairs, remote administration, network connectivity, and reducing unnecessary exposure.
