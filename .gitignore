@@ -1,0 +1,31 @@
+# Secrets and credentials
+.env
+.env.*
+*.key
+*.pem
+*.p12
+*.pfx
+*.ovpn
+id_rsa
+id_ed25519
+authorized_keys
+
+# VPN and private network configuration
+wg0.conf
+wireguard/
+tailscale-state/
+
+# Virtual machine disks and installation media
+*.iso
+*.qcow2
+*.vdi
+*.vmdk
+*.img
+
+# Logs and temporary files
+*.log
+*.tmp
+*.swp
+*~
+.DS_Store
+Thumbs.db
