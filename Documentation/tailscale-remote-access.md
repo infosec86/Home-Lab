@@ -6,19 +6,7 @@ Tailscale started as a way for me to reach Safehouse without opening ports on my
 
 Safehouse and my client systems are on the same tailnet. That lets me SSH into Safehouse from Windows or Omarchy even when I am not on the same local network.
 
-The basic path looks like this:
-
-```text
-Acer / remote client
-       |
-       | encrypted Tailscale tunnel
-       v
-   Safehouse
-       |
-       +-- SSH
-       +-- Glances
-       +-- other private services
-```
+The basic path is: Acer / remote client -> encrypted Tailscale tunnel -> Safehouse -> SSH, Glances, and other private services.
 
 I like this because I do not have to expose SSH or Glances directly to the public internet just to reach them remotely.
 
@@ -74,21 +62,7 @@ I also noticed the `tx` and `rx` counters increase much faster with the exit nod
 
 If I am on hotel or public Wi-Fi, I can still connect directly to Safehouse for SSH and lab services without using it as an exit node.
 
-Or I can enable the exit node and route my internet traffic back through my home connection:
-
-```text
-Acer while traveling
-       |
-       | encrypted Tailscale tunnel
-       v
-   Safehouse at home
-       |
-       v
-   home internet
-       |
-       v
-    internet
-```
+Or I can enable the exit node and route my internet traffic back through my home connection: Acer while traveling -> encrypted Tailscale tunnel -> Safehouse at home -> home internet -> internet.
 
 This is not the same thing as using a commercial privacy VPN. Websites still see the public IP of my home internet connection. The value for me is secure remote access and the ability to use my own home network as the exit point when I am away.
 
