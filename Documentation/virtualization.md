@@ -60,19 +60,7 @@ The Acer is fine for learning, but 8 GB of RAM becomes the real bottleneck very 
 
 Instead of replacing the Acer, I want to keep it as my control laptop and eventually buy one inexpensive corporate mini PC with replaceable DDR4 memory. That machine can become a dedicated Proxmox host with 16 GB or 32 GB to start, then grow later if needed.
 
-That should let me move toward:
-
-```text
-Acer
-  |
-  v
-Proxmox host
-  |-- Kali
-  |-- Windows Server
-  |-- Windows client
-  |-- Linux server
-  `-- other lab systems
-```
+The basic direction is: Acer -> Proxmox host -> Kali, Windows Server, Windows client, Linux server, and other lab systems.
 
 I am deliberately starting with one host instead of buying a cluster immediately. I want to learn what one system can do, what actually becomes a limitation, and then add hardware for a reason.
 
