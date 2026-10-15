@@ -54,23 +54,7 @@ The external IP test mattered because it does not depend on DNS. Since that fail
 
 The host had internet access, but the guest could not reach an external IP. That narrowed the fault domain quite a bit.
 
-I started thinking about the path like this:
-
-```text
-Xubuntu guest
-    |
-    v
-virtual NIC
-    |
-    v
-VMware NAT / virtual network
-    |
-    v
-Windows host
-    |
-    v
-home network / internet
-```
+I started thinking about the path as: Xubuntu guest -> virtual NIC -> VMware NAT / virtual network -> Windows host -> home network / internet.
 
 I did not prove an exact internal VMware root cause, so I do not want to pretend I did. The best conclusion I could support was that the problem was somewhere in the guest virtual NIC or VMware NAT path after the power interruption.
 
@@ -82,16 +66,7 @@ The biggest lesson was not "restart VMware." It was learning how much faster tro
 
 If I had gone straight to DNS settings, I would have been troubleshooting the wrong layer. If I had reset the router first, I would have changed something that was already working.
 
-The sequence that made sense was:
-
-```text
-interface
-  -> route
-  -> virtual gateway
-  -> external IP
-  -> DNS
-  -> application
-```
+The sequence that made sense was: interface -> route -> virtual gateway -> external IP -> DNS -> application.
 
 That is the part I want to remember for future problems.
 
