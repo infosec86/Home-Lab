@@ -1,158 +1,104 @@
-# Network Incident Writeup: VMware Guest Connectivity Failure
+# VMware Guest Lost Network Connectivity
 
-## Summary
+This was not a lab I planned. It happened after a brief power interruption, which made it more useful because I had to troubleshoot a real problem instead of following a checklist.
 
-During normal home-lab use, a Linux guest running in VMware Workstation lost internet connectivity after a brief power interruption. The physical host retained normal internet access, while the guest experienced severe latency followed by complete loss of external connectivity.
+My Windows host still had internet access, but the Xubuntu VM in VMware Workstation became extremely slow and then lost outside connectivity completely.
 
-This incident became a useful troubleshooting exercise because it occurred unexpectedly rather than as part of a planned lab.
+## What I noticed first
 
-## Environment
+The important detail was that Windows was still online while the VM was not. That meant I probably did not need to start changing the home router, blaming the ISP, or resetting everything in sight.
 
-The affected environment consisted of:
+The problem looked much more likely to be somewhere between the guest operating system and VMware's virtual network.
 
-- Windows host system
-- VMware Workstation
-- Linux desktop guest
-- VMware NAT networking
-- Standard non-administrative guest account for normal work
-- Separate administrative guest account for system changes
+## What I checked
 
-Specific usernames, IP addresses, MAC addresses, VPN details, device identifiers, and other environment-specific values are intentionally omitted from this public writeup.
-
-## Symptoms
-
-The guest initially appeared extremely slow when accessing the internet. Further testing showed:
-
-- The host system still had normal internet access.
-- The guest could not reliably reach external IP addresses.
-- Name resolution also failed.
-- The guest network interface later reconnected and connectivity returned.
-
-A failed connection to an external IP address was especially useful because it showed that the problem was more fundamental than DNS alone.
-
-## Troubleshooting Process
-
-The troubleshooting approach moved from the local virtual interface outward rather than changing multiple settings at once.
-
-### 1. Verify interface state
+I started inside the Xubuntu guest with:
 
 ```bash
 ip addr
 ```
 
-This checks whether the guest network interface is present, up, and has an IPv4 address.
+I wanted to know whether the virtual interface was still present, whether it was up, and whether it had an IPv4 address.
 
-### 2. Verify routing
+Then I checked the route table:
 
 ```bash
 ip route
 ```
 
-The goal is to confirm that the guest has a valid default route through the virtual network.
+I was looking for a valid default route through VMware's virtual gateway.
 
-A healthy system should include a default route similar to:
+From there I tested outward instead of jumping straight to DNS.
 
-```text
-default via <virtual-gateway> dev <guest-interface>
-```
-
-### 3. Test the virtual gateway
+First the virtual gateway:
 
 ```bash
 ping -c 4 <virtual-gateway>
 ```
 
-This helps determine whether the problem exists between the guest and VMware's virtual network or farther upstream.
-
-### 4. Test raw external connectivity
+Then an external IP address:
 
 ```bash
 ping -c 4 <external-test-ip>
 ```
 
-This test does not depend on DNS. If it fails, the problem is not simply name resolution.
-
-### 5. Test DNS after IP connectivity
+Then a hostname:
 
 ```bash
 ping -c 4 example.com
 ```
 
-If raw IP connectivity works but hostname resolution fails, DNS becomes the primary focus.
+The external IP test mattered because it does not depend on DNS. Since that failed too, I knew the problem was below the name-resolution layer.
 
-In this incident, both external IP connectivity and DNS were affected.
+## What that told me
 
-## Fault Isolation
+The host had internet access, but the guest could not reach an external IP. That narrowed the fault domain quite a bit.
 
-The host system remained online while the guest could not reach the internet. That comparison significantly narrowed the fault domain.
-
-Instead of investigating the ISP, household router, or browser first, the troubleshooting focus shifted to the guest's virtual network path:
+I started thinking about the path like this:
 
 ```text
-Guest interface
-    ↓
-Guest IP configuration
-    ↓
-Default route
-    ↓
-VMware virtual network / NAT
-    ↓
-External connectivity
-    ↓
-DNS
-    ↓
-Application
+Xubuntu guest
+    |
+    v
+virtual NIC
+    |
+    v
+VMware NAT / virtual network
+    |
+    v
+Windows host
+    |
+    v
+home network / internet
 ```
 
-The guest eventually reported that its network interface had reconnected, after which connectivity returned.
+I did not prove an exact internal VMware root cause, so I do not want to pretend I did. The best conclusion I could support was that the problem was somewhere in the guest virtual NIC or VMware NAT path after the power interruption.
 
-## Likely Cause
+Eventually the guest reported that the interface had reconnected, and internet access returned without changing the router or ISP configuration.
 
-The exact internal failure was not proven, so this writeup does not claim a definitive root cause.
+## What I learned from it
 
-Based on the observations, the most likely fault domain was the VMware virtual networking path or guest virtual NIC state following the abrupt power event.
+The biggest lesson was not "restart VMware." It was learning how much faster troubleshooting gets when I compare a working system to a broken one and test one layer at a time.
 
-Evidence supporting that conclusion:
+If I had gone straight to DNS settings, I would have been troubleshooting the wrong layer. If I had reset the router first, I would have changed something that was already working.
 
-- The physical host remained connected.
-- The guest could not reach an external IP address.
-- DNS failed at the same time as general connectivity.
-- Connectivity returned when the guest's virtual network connection recovered.
+The sequence that made sense was:
 
-## Resolution
+```text
+interface
+  -> route
+  -> virtual gateway
+  -> external IP
+  -> DNS
+  -> application
+```
 
-Connectivity was restored after the guest's virtual network interface reconnected.
+That is the part I want to remember for future problems.
 
-No router, ISP, or application-level changes were required.
+## How I would explain this in an interview
 
-## Lessons Learned
+A Linux VM lost internet access after a brief power event while the Windows host remained online. I used the working host as a comparison point, checked the guest interface and routing, and tested an external IP before looking at DNS. Because raw IP connectivity failed, I knew the problem was below the DNS layer. That narrowed the issue to the VMware virtual networking path, and connectivity returned when the guest interface recovered.
 
-- Test external IP connectivity before assuming a DNS problem.
-- Compare host and guest connectivity to isolate the fault domain.
-- Check the guest interface and default route before changing application settings.
-- Virtual NAT is an additional networking layer that can fail independently of the physical network.
-- Unexpected infrastructure issues are valuable troubleshooting exercises when the symptoms, tests, reasoning, and outcome are documented.
-- Avoid changing several variables at once; use each test to eliminate a specific layer of the stack.
+## What I left out of the public repo
 
-## Interview Summary
-
-A concise way to describe the incident in an interview:
-
-> A Linux VM lost internet connectivity after a brief power interruption while the Windows host remained online. I separated DNS from general connectivity by testing an external IP address first. Because the guest could not reach the external IP, I knew the issue was below the DNS layer. I then checked the guest interface and routing path, narrowed the fault domain to the virtual networking layer, and verified recovery when the guest network interface reconnected. The incident reinforced a layered troubleshooting approach from interface to routing to external connectivity to DNS.
-
-## Public Repository Safety
-
-This writeup intentionally excludes:
-
-- Real usernames
-- Passwords or credentials
-- VPN configuration details
-- Public or private IP addresses from the actual environment
-- MAC addresses
-- Router or firewall administration details
-- Device serial numbers
-- Authentication tokens
-- SSH keys or private key material
-- Screenshots containing sensitive information
-
-The goal is to document the troubleshooting method and technical reasoning without publishing information that could assist reconnaissance against the actual lab environment.
+I intentionally removed real usernames, device addresses, VPN details, MAC addresses, credentials, and other information that would not add anything to the troubleshooting story.
