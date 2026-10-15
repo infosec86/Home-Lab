@@ -1,67 +1,99 @@
 # Tailscale Remote Access and Exit Node
 
-## Objective
+Tailscale started as a way for me to reach Safehouse without opening ports on my home router. It has turned into one of the more useful parts of the lab because it also gave me a practical way to learn about private networking, routing, and exit nodes.
 
-Tailscale is used to provide secure remote access to the home lab without forwarding administrative ports through the home router.
+## Remote access
 
-## Remote Access
+Safehouse and my client systems are on the same tailnet. That lets me SSH into Safehouse from Windows or Omarchy even when I am not on the same local network.
 
-Safehouse and authorized client systems are members of the same private Tailscale network.
-
-SSH runs over that private connection:
+The basic path looks like this:
 
 ```text
-Remote client
-     |
-     | encrypted Tailscale connection
-     v
-Safehouse
-     |
-     +-- SSH
-     +-- private services
+Acer / remote client
+       |
+       | encrypted Tailscale tunnel
+       v
+   Safehouse
+       |
+       +-- SSH
+       +-- Glances
+       +-- other private services
 ```
 
-## Exit Node
+I like this because I do not have to expose SSH or Glances directly to the public internet just to reach them remotely.
 
-Safehouse is also configured as a Tailscale exit node for testing trusted remote browsing from networks such as hotels or public Wi-Fi.
+## The exit-node part that confused me at first
 
-When enabled on a client:
+I originally mixed up which machine was supposed to do what.
+
+Safehouse is the machine that advertises the exit-node capability. My Acer is the client that decides whether to use Safehouse as the route to the internet.
+
+So the client-side command points to Safehouse:
 
 ```text
-Remote client
-     |
-     | Tailscale
-     v
-Safehouse
-     |
-     v
-Internet
+tailscale set --exit-node=<SAFEHOUSE_TAILSCALE_IP>
 ```
 
-This is a networking and secure-remote-access exercise. It does not make the client anonymous; internet traffic still exits through the home internet connection unless another upstream VPN is deliberately configured.
+That means, in plain language, "send this computer's internet traffic through Safehouse."
 
-## Linux Client Shortcuts
+Once I started thinking of it that way, the setup became much easier to understand.
 
-The Omarchy client uses Bash aliases so the exit node can be enabled and disabled without remembering the full command:
+## Windows shortcuts
+
+On Windows I created two PowerShell functions:
+
+```powershell
+safehouse-on
+safehouse-off
+```
+
+Those functions live in my PowerShell profile and save me from remembering the full Tailscale command every time.
+
+I also had to change my PowerShell execution policy for the current user to `RemoteSigned` so the profile could load. I did not use `Unrestricted` or disable script security system-wide.
+
+## Omarchy shortcuts
+
+I set up the same idea in Omarchy so the workflow is consistent no matter which OS I boot on the Acer:
 
 ```bash
-alias safehouse-on='sudo tailscale set --exit-node=<SAFEHOUSE_TAILSCALE_IP>'
-alias safehouse-off='sudo tailscale set --exit-node='
+safehouse-on
+safehouse-off
 ```
 
-The live Tailscale address is intentionally not stored in this repository.
+The implementation is different because Linux uses shell aliases/functions while Windows uses PowerShell functions, but the result is the same.
 
-## Testing
+## How I verified it was actually working
 
-The configuration has been tested by:
+One of the easiest signs was `tailscale status`.
 
-- Reaching Safehouse over Tailscale
-- Using SSH through the tailnet
-- Confirming connectivity after reboot
-- Accessing the server while its laptop lid is closed
-- Selecting Safehouse as an exit node
-- Confirming the client route changes when the exit node is enabled and disabled
+When Safehouse was only available as an option, the status showed that it `offers exit node`. After enabling it from the client, the status changed to show Safehouse as the active exit node.
 
-## What I Learned
+I also noticed the `tx` and `rx` counters increase much faster with the exit node enabled. That made sense once I realized normal internet traffic was now crossing the Tailscale tunnel instead of only traffic going to other tailnet devices.
 
-This project has provided hands-on practice with overlay networking, encrypted remote access, exit-node routing, client/server roles, and troubleshooting the difference between connectivity problems and authentication problems.
+## What this gives me when traveling
+
+If I am on hotel or public Wi-Fi, I can still connect directly to Safehouse for SSH and lab services without using it as an exit node.
+
+Or I can enable the exit node and route my internet traffic back through my home connection:
+
+```text
+Acer while traveling
+       |
+       | encrypted Tailscale tunnel
+       v
+   Safehouse at home
+       |
+       v
+   home internet
+       |
+       v
+    internet
+```
+
+This is not the same thing as using a commercial privacy VPN. Websites still see the public IP of my home internet connection. The value for me is secure remote access and the ability to use my own home network as the exit point when I am away.
+
+## What I learned
+
+The biggest lesson here was separating private-network access from internet routing. Tailscale can connect my devices together without automatically routing all web traffic through Safehouse. The exit-node setting is what changes that behavior.
+
+That distinction is something I understand much better now because I could actually turn it on, watch the route change, and see the traffic counters move.
