@@ -1,52 +1,63 @@
-# SSH Hardening
+# SSH Hardening on Safehouse
 
-## Objective
+SSH was one of the first things I wanted to get right on Safehouse because I planned to manage it remotely most of the time.
 
-The goal of this configuration is to administer Safehouse remotely while reducing unnecessary SSH exposure and avoiding password-based remote authentication.
+I did not want to expose a password-based SSH login to the internet and then just hope nobody found it. The approach I settled on was to keep SSH reachable through Tailscale and use public-key authentication.
 
-## Authentication
+## How I set it up
 
-Safehouse uses OpenSSH with Ed25519 public-key authentication.
+Safehouse uses OpenSSH with Ed25519 keys.
 
-The private key remains on the client device and is protected with a passphrase. The corresponding public key is stored in the server user's `authorized_keys` file.
+The client keeps the private key. Safehouse only gets the matching public key in the user's `authorized_keys` file. I also disabled password authentication and direct root SSH login.
 
-Password-based SSH authentication is disabled, and direct root SSH login is disabled. Administrative tasks are performed from a normal user account with `sudo` only when elevated privileges are required.
+That means I normally connect as a regular user and only use `sudo` when I actually need administrative privileges.
 
-## Network Access
+## What I had to understand
 
-SSH is primarily reached through Tailscale instead of exposing port 22 directly to the public internet.
+The part that took a little while to really stick was that SSH problems are not all the same.
 
-## Troubleshooting
+If I see:
 
-A useful troubleshooting sequence is:
-
-```bash
-tailscale status
-tailscale ping <SERVER_NAME>
-ssh -vvv <USER>@<SERVER_TAILSCALE_IP>
+```text
+Connection timed out
 ```
 
-The verbose SSH output helped distinguish between:
+I probably have not reached the SSH service at all. That points me toward Tailscale, routing, firewall rules, interface state, or whether SSH is actually running.
 
-- Network timeouts
-- Hostname-resolution problems
-- Missing client identities
-- Rejected public keys
-- Successful network connectivity with failed authentication
+If I see:
 
-One important lesson was to always verify which machine a command is running on before changing server or client configuration.
+```text
+Permission denied (publickey)
+```
 
-## Verification
+then the network path worked. I reached Safehouse, but authentication failed.
 
-The setup has been tested by:
+That distinction changed the way I troubleshoot SSH.
 
-- Connecting with an SSH key
-- Confirming password authentication is disabled
-- Confirming root SSH login is disabled
-- Rebooting the server
-- Verifying SSH connectivity after reboot
-- Adding a second authorized client key and testing it successfully
+When I need more detail, I use:
 
-## What I Learned
+```bash
+ssh -vvv <user>@<host>
+```
 
-This work reinforced the relationship between SSH authentication, Linux permissions, public/private key pairs, remote administration, network connectivity, and reducing unnecessary exposure.
+The output is noisy, but it shows which identities are being offered and whether the failure happens before or during authentication.
+
+## Why I use Tailscale with SSH
+
+I could forward port 22 through the home router, but there is no reason for me to do that right now.
+
+Tailscale gives my authorized devices a private path to Safehouse, so SSH can stay off the public internet.
+
+That does not mean I treat Tailscale as magic. I still want SSH itself configured correctly in case the network design changes later.
+
+## How I verified it
+
+I tested that I could connect with the key, confirmed password logins were disabled, confirmed direct root SSH was disabled, rebooted Safehouse, and verified that SSH still worked afterward.
+
+I also added another authorized client and tested that separately so I could see how multiple client keys are handled.
+
+## What I learned
+
+SSH hardening made more sense once I stopped thinking of it as one setting.
+
+There is the network path, the SSH service, the user account, file permissions, the public/private key relationship, and the authentication policy. A failure at any one of those layers can look like "SSH is broken" until I narrow down which part actually failed.
