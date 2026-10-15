@@ -2,9 +2,9 @@
 
 This repository is my running record of building a home lab from hardware I already had or could get cheaply. I am using it to get more comfortable with Linux, networking, cybersecurity, virtualization, containers, remote administration, and troubleshooting.
 
-I do not want this repo to read like I knew the answer before I started. A lot of the useful parts have come from getting something wrong, checking what the system is actually doing, and then understanding why the fix worked. That is what I want to document here.
+I want this repo to be more than anything my online journal of my journey through networks and security. So far, a lot of the useful parts have come from getting something wrong, checking what the system is actually doing, and then understanding why the fix worked. That is what I want to document here.
 
-The lab is also intentionally budget-focused. I would rather learn how to get useful work out of an old 4 GB laptop and a used corporate mini PC than spend a lot of money on finished hardware and skip the parts I actually want to learn.
+The lab is also intentionally budget-focused. I would rather learn how to get useful work out of an old 4 GB laptop and a used corporate mini PC than spend a lot of money on finished hardware and skip the parts I actually want to learn. Over time, the equipment will improve as I fully understand what it is I'm using and what I want to achieve. It's easy to spend a lot on equipment that I may not use fully.
 
 ## What I am building
 
@@ -24,6 +24,7 @@ I currently use it for:
 - Nginx
 - Docker and Docker Compose
 - Glances
+- btop
 - tmux
 - rsync and cron practice
 - Linux permissions and user management
@@ -32,6 +33,8 @@ I currently use it for:
 - basic Python practice
 
 One example of why I keep this repo is Glances. I saw Glances report that it was listening on `0.0.0.0:61208` and initially thought I had exposed it more broadly than I wanted. After checking Docker with `docker ps`, I found that the container was listening on all interfaces internally, but Docker was only publishing it to `127.0.0.1:61208` on Safehouse. Tailscale Serve then provides the remote path to that local service. That helped me understand the difference between what an application is listening on inside a container and what the host is actually exposing.
+
+I have also been using `btop` a lot more lately instead of always opening the Glances web interface. Glances is still useful, but `btop` is a really quick way to check CPU, memory, processes, and general system health when I am already in the terminal.
 
 ### Nightfall — Omarchy / Arch Linux
 
@@ -59,6 +62,12 @@ The Xubuntu VM currently runs with 3 GB RAM, 2 CPU cores, NAT networking, a grow
 
 I also created PowerShell functions named `safehouse-on` and `safehouse-off`. I originally mixed up which machine was supposed to be the exit node. The command runs on HomeLaptop, but it points to Safehouse because Safehouse is the machine providing the exit route. Once that clicked, the setup made a lot more sense.
 
+### Phone access while traveling
+
+I have also added Tailscale to my personal phone so I can check on the home lab even when I am traveling and do not have my laptop with me.
+
+I installed Termux on the phone and use a small Bluetooth keyboard and mouse that are portable enough to fit in my pocket. I am not using this setup every day, but it is nice knowing I can reach Safehouse, check status, or do something simple from almost anywhere if I need to.
+
 ## How I am approaching security
 
 I am trying to keep services private unless I have a reason to expose them.
@@ -81,11 +90,11 @@ This public repository does not contain private keys, passwords, tokens, live VP
 
 ## What I want this repo to show
 
-I am not trying to make the lab look more advanced than it is. I want it to show that I can build something, understand how the pieces connect, notice when something is wrong, troubleshoot it, and explain what I learned.
+I am not trying to make the lab look more advanced than it is. I want to understand how the pieces connect, notice when something is wrong, troubleshoot it, and explain what I learned.
 
 That means I am going to keep notes about mistakes and confusion instead of cleaning all of that out afterward. If I thought `ifconfig` was its own package and then learned it comes from `net-tools`, that is worth recording. If I thought a Tailscale command belonged on Safehouse when it really belonged on the client, that is worth recording too.
 
-Those small moments are where a lot of the learning is happening.
+Those small moments are where a lot of the learning is happening and may help others who are just starting out. All the learning I did in academics was priceless, but I've remembered much more by physically doing it. I will say, however, that all those notes I took in class came in very handy, so a personal pat on my back for that one.
 
 ## Current hardware direction
 
@@ -117,6 +126,8 @@ Managed switch
 I am not buying three Proxmox nodes just to say I have a cluster. I want to start with one host, learn what actually limits me, and add hardware when there is a reason for it.
 
 ## Things I want to build toward
+
+One of my next smaller projects is automating Safehouse security updates so I do not have to keep logging in just to install routine packages and updates. I am thinking about having it check and apply the appropriate updates on a schedule, possibly every three days, while still keeping enough visibility to know what changed and whether a reboot is needed.
 
 Over time I want to work with Windows Server and Active Directory, VLANs, managed switches, firewall/router labs, SIEM and logging, vulnerable training machines, network segmentation, shared storage, backups, Proxmox clustering concepts, and eventually some AI/programming projects.
 
