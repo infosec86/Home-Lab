@@ -104,24 +104,7 @@ Rather than buying several laptops, the next major hardware step is likely one i
 
 The goal is to turn one of those into the first dedicated Proxmox host and move the heavier VM workload off the Acer.
 
-A future layout could look like this:
-
-```text
-Acer / control laptop
-        |
-        | LAN / Tailscale
-        v
-Managed switch
-   |          |
-   |          +--> Safehouse (Debian / Docker)
-   |
-   +--> Proxmox mini PC
-          |-- Kali
-          |-- Windows Server
-          |-- Windows clients
-          |-- Linux servers
-          `-- lab services
-```
+The basic direction is: Acer / control laptop -> LAN or Tailscale -> managed switch -> Safehouse for Debian/Docker services and a Proxmox mini PC for Kali, Windows Server, Windows clients, Linux servers, and other lab systems.
 
 I am not buying three Proxmox nodes just to say I have a cluster. I want to start with one host, learn what actually limits me, and add hardware when there is a reason for it.
 
